@@ -56,7 +56,11 @@ function configuration {
 	mkdir -p $install_dir/log
 	chown $user_motion $install_dir/log
 	chmod ugo+w $install_dir/log
-	sed -i "s#^logfile /var/log/motion/motion.log#process_id_file $install_dir/log/motion.log#" $install_dir/conf/motion.conf
+	sed -i "s#^logfile /var/log/motion/motion.log#logfile $install_dir/log/motion.log#" $install_dir/conf/motion.conf
+	mkdir -p $install_dir/proc
+	chown $user_motion $install_dir/proc
+	chmod ugo+w $install_dir/proc
+	sed -i "s#^process_id_file /var/run/motion/motion.pid#process_id_file $install_dir/proc/motion.pid#" $install_dir/conf/motion.conf
 }
 
 function configureUSB {
@@ -141,7 +145,7 @@ function configureCron {
     if [ -z "`grep 'start.sh' /etc/crontab`" ]
     then
         echo "@reboot $user_motion cd $install_dir; ./start.sh >> /dev/null 2>&1" >> /etc/crontab
-        echo "00 $daily_start * * * $user_motion cd $install_dir; ./start.sh >> /dev/null 2>&1" >> /etc/crontab
+        echo "00 $daily_start * * * root reboot >> /dev/null 2>&1" >> /etc/crontab
     fi
     if [ -z "`grep 'stop.sh' /etc/crontab`" ]
     then
@@ -167,4 +171,3 @@ mkdir -p results
 chown $user_motion results
 echo "rebooting .,."
 reboot
-
